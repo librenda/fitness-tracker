@@ -1,4 +1,25 @@
 {
   "project": "fitness-tracker",
-  "stories": []
+  "stories": [
+    {
+      "id": "GH-1",
+      "type": "feat",
+      "priority": 5,
+      "title": "End-to-end photo upload slice",
+      "description": "Personal Flask + SQLite web app to log treadmill runs from a phone photo and track trends.\n\nThis first ticket delivers the **end-to-end upload slice** only. Explicitly **out of scope** here (they become follow-up issues GH-2+): the dashboard with distance bar chart + pace/duration trends, the photo timeline view, and edit/delete of existing entries.\n\n## Context\n- Single user, no auth (first cut).\n- The user photographs the treadmill's run-summary console (sometimes with themselves in frame, often not perfectly clear).\n- Run stats are extracted from that photo via the **Claude vision API** (default model `claude-sonnet-4-6`, configurable). The app needs `ANTHROPIC_API_KEY` at runtime.\n- Date/time come from the photo's EXIF `DateTimeOriginal` (NOT the upload time); fall back to upload time and flag the entry if EXIF is absent.\n- Pace is derived from distance/duration when the console only shows speed. Calories/incline captured if present, optional.",
+      "acceptance_criteria": [
+        "Flask app skeleton with a SQLite database and a home page that renders without error.",
+        "SQLite schema for a run entry: photo path, distance, duration, pace, run datetime (from EXIF), `note` (how the run felt), optional calories/incline, and a flag for \"EXIF date missing\".",
+        "Mobile-friendly upload form (`<input type=\"file\" accept=\"image/*\">`) that saves the uploaded photo to local disk.",
+        "On upload, the app calls Claude vision to extract distance, duration, and pace from the photo, and reads EXIF `DateTimeOriginal` for the run datetime.",
+        "A confirmation page shows the extracted values pre-filled and editable, so the user can correct anything before saving (covers the \"extraction unclear -> user inputs\" case).",
+        "On confirm, the entry is persisted to SQLite and the photo is retained on disk.",
+        "The Claude vision call is isolated behind a small function that is stubbed/mocked in tests, so `pytest` passes in CI without a live API key or network.",
+        "`uv run pytest -q` is green."
+      ],
+      "skill_match": null,
+      "passes": false,
+      "status": "open"
+    }
+  ]
 }
