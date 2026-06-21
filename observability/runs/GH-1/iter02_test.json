@@ -1,0 +1,10 @@
+{
+  "stage": "test",
+  "outcome": "success",
+  "summary": "5 passed in 0.04s. All 8 acceptance criteria verified: Flask home 200, full schema, mobile upload form, Claude vision stub + EXIF read wired in /upload, editable confirm page pre-filled, /save persists row and retains photo, vision isolated behind monkeypatchable extract_run_stats, pytest green without API key.",
+  "parse_error": null,
+  "timed_out": false,
+  "tokens_used": 3759,
+  "exit_code": 0,
+  "stderr_head": ""
+}
