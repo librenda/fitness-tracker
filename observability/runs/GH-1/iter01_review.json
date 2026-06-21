@@ -1,0 +1,10 @@
+{
+  "stage": "review",
+  "outcome": "failure",
+  "summary": "Upload-confirm-save slice is solid (7/8 criteria verified), but app/exif.py reads DateTimeOriginal (36867) from the top-level IFD via getexif().get(); that tag lives in the Exif sub-IFD (0x8769), so real photos always fall back to upload time and set exif_date_missing=1, breaking criterion 4. Bug is masked by tests using an EXIF-less JPEG. Could not re-run pytest (sandbox denied) or do Playwright visual (no tool); relied on test-stage green plus code read.",
+  "parse_error": null,
+  "timed_out": false,
+  "tokens_used": 15063,
+  "exit_code": 0,
+  "stderr_head": ""
+}
