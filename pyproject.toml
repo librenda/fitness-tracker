@@ -20,3 +20,6 @@ build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.hatch.build]
+exclude = ["**/__pycache__", "**/*.pyc"]
