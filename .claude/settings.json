@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash|PowerShell", "hooks": [
+        { "type": "command", "command": "uv run --quiet python \"/Users/brendali/Documents/Coding Projects/agentic-sdlc/hooks/pretooluse_guard.py\"" } ] },
+      { "matcher": "Edit|Write|NotebookEdit", "hooks": [
+        { "type": "command", "command": "uv run --quiet python \"/Users/brendali/Documents/Coding Projects/agentic-sdlc/hooks/pretooluse_guard.py\"" } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write|NotebookEdit", "hooks": [
+        { "type": "command", "command": "uv run --quiet python \"/Users/brendali/Documents/Coding Projects/agentic-sdlc/hooks/posttooluse_autocommit.py\"" } ] }
+    ],
+    "Stop": [
+      { "hooks": [
+        { "type": "command", "command": "uv run --quiet python \"/Users/brendali/Documents/Coding Projects/agentic-sdlc/hooks/stop_checklist.py\"" } ] }
+    ]
+  }
+}
