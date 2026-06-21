@@ -1,0 +1,10 @@
+{
+  "stage": "plan",
+  "outcome": "success",
+  "summary": "Plan for end-to-end photo upload slice: Flask app-factory + sqlite3 runs table, upload\u2192confirm\u2192save flow, lazy-constructed Claude vision call isolated for mocking, Pillow EXIF with fallback flag, pytest suite. All 8 acceptance criteria mapped.",
+  "parse_error": null,
+  "timed_out": false,
+  "tokens_used": 9630,
+  "exit_code": 0,
+  "stderr_head": ""
+}
