@@ -1,0 +1,14 @@
+## Codebase Patterns
+
+GH-1 (2026-06-21): Harness auto-commits every Write/Edit tool call immediately,
+so files appear in git history before you manually commit. Use `git ls-files` to
+verify what's already tracked rather than assuming untracked.
+
+GH-1: hatchling build backend requires `[tool.hatch.build.targets.wheel]
+packages = ["app"]` when the package dir doesn't match the project name
+(fitness-tracker -> fitness_tracker mismatch). Without it, `uv sync` fails to
+build the editable wheel.
+
+GH-1: Anthropic client must be constructed lazily inside _call_claude_vision
+(not at module import) so tests can monkeypatch extract_run_stats without
+needing ANTHROPIC_API_KEY in the environment.
