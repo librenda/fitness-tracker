@@ -1,7 +1,9 @@
 import io
 import os
 import pytest
+from PIL import Image
 from app.db import get_db
+from app.exif import read_datetime_original
 
 
 _FAKE_STATS = {
