@@ -34,6 +34,43 @@ _TINY_JPEG = (
 )
 
 
+_EXIF_DT_STR = "2026:06:21 08:30:00"
+
+
+def _make_jpeg_with_exif(dt_str=_EXIF_DT_STR) -> bytes:
+    img = Image.new("RGB", (1, 1), color=(255, 0, 0))
+    exif = img.getexif()
+    exif.get_ifd(0x8769)[36867] = dt_str  # DateTimeOriginal in Exif sub-IFD
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", exif=exif.tobytes())
+    return buf.getvalue()
+
+
+def test_read_datetime_original_reads_exif_subifd(tmp_path):
+    jpeg_bytes = _make_jpeg_with_exif()
+    path = tmp_path / "exif_run.jpg"
+    path.write_bytes(jpeg_bytes)
+    dt = read_datetime_original(str(path))
+    assert dt is not None
+    assert dt.year == 2026 and dt.month == 6 and dt.day == 21
+    assert dt.hour == 8 and dt.minute == 30
+
+
+def test_upload_exif_date_not_missing(client, monkeypatch):
+    import app.routes as routes_module
+
+    monkeypatch.setattr(routes_module, "extract_run_stats", lambda path, model: _FAKE_STATS)
+
+    jpeg_bytes = _make_jpeg_with_exif()
+    data = {"photo": (io.BytesIO(jpeg_bytes), "exif_run.jpg")}
+    resp = client.post("/upload", data=data, content_type="multipart/form-data")
+
+    assert resp.status_code == 200
+    html = resp.data.decode()
+    # exif_date_missing hidden field must be 0
+    assert 'name="exif_date_missing" value="0"' in html
+
+
 def test_home_returns_200(client):
     resp = client.get("/")
     assert resp.status_code == 200
