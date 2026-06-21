@@ -30,7 +30,8 @@ def upload():
     if not photo or photo.filename == "":
         return redirect(url_for("runs.index"))
 
-    filename = secure_filename(photo.filename)
+    base = secure_filename(photo.filename)
+    filename = f"{uuid.uuid4().hex}_{base}"
     upload_folder = current_app.config["UPLOAD_FOLDER"]
     photo_path = os.path.join(upload_folder, filename)
     photo.save(photo_path)
