@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fitness Tracker</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    input[type="file"], input[type="submit"] { margin-top: .5rem; }
+    input[type="submit"] { padding: .5rem 1.5rem; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Log a Run</h1>
+  <form method="post" action="/upload" enctype="multipart/form-data">
+    <label for="photo">Treadmill photo</label>
+    <input type="file" id="photo" name="photo" accept="image/*" capture="environment" required>
+    <br>
+    <input type="submit" value="Upload &amp; Extract">
+  </form>
+</body>
+</html>

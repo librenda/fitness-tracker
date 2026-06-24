@@ -1,0 +1,16 @@
+{
+  "_comment": "Target override of engine configs/budgets.json. permission_denial_cap raised 10->30: read-only review/plan stages reflexively attempt pytest/python (denied by design), and those expected denials accumulate across iterations; cap=10 trips the breaker on any 2+ iteration story. See engine system-repair issue on breaker tuning.",
+  "hourly_api_call_cap": 30,
+  "per_ticket_token_budget": 2000000,
+  "permission_denial_cap": 30,
+  "instant_failure_cap": 2,
+  "max_iterations_default": 5,
+  "circuit_cooldown_minutes": 30,
+  "usage_limit_cooldown_minutes": 300,
+  "stage_timeout_minutes": 15,
+  "test_evidence_command": ["uv", "run", "pytest", "-q"],
+  "test_evidence_timeout_minutes": 10,
+  "observer_enabled": true,
+  "max_parallel": 3,
+  "in_progress_stale_minutes": 60
+}

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirm Run — Fitness Tracker</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    input[type="text"], input[type="number"], input[type="datetime-local"], textarea {
+      width: 100%; box-sizing: border-box; margin-top: .25rem; padding: .4rem; font-size: 1rem;
+    }
+    input[type="submit"] { margin-top: 1.5rem; padding: .5rem 1.5rem; font-size: 1rem; }
+    .warning { background: #fff3cd; border: 1px solid #ffc107; padding: .5rem; border-radius: 4px; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Confirm Run Details</h1>
+  <p>Review and correct the extracted values, then save.</p>
+
+  {% if exif_date_missing %}
+  <div class="warning">⚠ No EXIF date found — run time set to upload time. Please correct if needed.</div>
+  {% endif %}
+
+  <form method="post" action="/save">
+    <input type="hidden" name="photo_path" value="{{ photo_path }}">
+    <input type="hidden" name="exif_date_missing" value="{{ exif_date_missing }}">
+
+    <label for="run_at">Run date &amp; time</label>
+    <input type="datetime-local" id="run_at" name="run_at" value="{{ run_at }}">
+
+    <label for="distance">Distance</label>
+    <input type="number" id="distance" name="distance" step="0.01" value="{{ distance }}">
+
+    <label for="duration">Duration (minutes)</label>
+    <input type="number" id="duration" name="duration" step="0.01" value="{{ duration }}">
+
+    <label for="pace">Pace (min/unit)</label>
+    <input type="number" id="pace" name="pace" step="0.01" value="{{ pace }}">
+
+    <label for="calories">Calories (optional)</label>
+    <input type="number" id="calories" name="calories" step="1" value="{{ calories }}">
+
+    <label for="incline">Incline % (optional)</label>
+    <input type="number" id="incline" name="incline" step="0.1" value="{{ incline }}">
+
+    <label for="note">How did the run feel?</label>
+    <textarea id="note" name="note" rows="3"></textarea>
+
+    <br>
+    <input type="submit" value="Save Run">
+  </form>
+</body>
+</html>

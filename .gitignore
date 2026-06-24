@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+instance/
+*.db
+
+# Harness run artifacts (git-as-memory, kept local — mirrors the engine .gitignore)
+observability/runs/
+state.json
+progress.txt
