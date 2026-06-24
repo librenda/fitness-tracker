@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 from datetime import datetime
@@ -22,6 +23,33 @@ bp = Blueprint("runs", __name__)
 @bp.route("/")
 def index():
     return render_template("index.html")
+
+
+@bp.route("/dashboard")
+def dashboard():
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, run_at, distance, duration, pace, note, exif_date_missing"
+        " FROM runs ORDER BY run_at DESC"
+    ).fetchall()
+    runs = [dict(r) for r in rows]
+
+    chart_runs = sorted(runs, key=lambda r: r["run_at"] or "")
+    labels = [r["run_at"] or "" for r in chart_runs]
+    distances = [r["distance"] for r in chart_runs]
+    paces = [r["pace"] for r in chart_runs]
+    durations = [r["duration"] for r in chart_runs]
+    estimated = [bool(r["exif_date_missing"]) for r in chart_runs]
+
+    chart_data = json.dumps({
+        "labels": labels,
+        "distances": distances,
+        "paces": paces,
+        "durations": durations,
+        "estimated": estimated,
+    })
+
+    return render_template("dashboard.html", runs=runs, chart_data=chart_data)
 
 
 @bp.route("/upload", methods=["POST"])
