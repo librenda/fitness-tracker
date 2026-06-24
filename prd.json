@@ -20,6 +20,63 @@
       "skill_match": null,
       "passes": true,
       "status": "done"
+    },
+    {
+      "id": "GH-5",
+      "type": "feat",
+      "priority": 5,
+      "title": "Edit and delete saved run entries",
+      "description": "Follow-up to GH-1. Adds **edit and delete** for existing run entries, so the user can correct a bad vision extraction after saving or remove a mistaken upload.\n\n## Context\n- Single user, no auth.\n- Run entries live in the `runs` table (GH-1); photos live under `instance/uploads/`.\n- Editable fields mirror the GH-1 confirm page: distance, duration, pace, run_at, note, calories, incline.",
+      "acceptance_criteria": [
+        "From the dashboard (or a run-detail view), each run has **Edit** and **Delete** actions.",
+        "Edit opens a form pre-filled with the current values (reusing the confirm-page field layout) and `POST`s an update that persists to SQLite.",
+        "Delete removes the `runs` row and the associated photo file from disk, after a confirmation step.",
+        "Delete is guarded against removing files outside the upload folder (operate only on the row's stored photo path).",
+        "Editing or deleting a non-existent run id returns a clean 404, not a 500.",
+        "Tests cover: an edit updates the row, and a delete removes both the row and the file \u2014 using the existing SQLite test fixture.",
+        "`uv run pytest -q` is green."
+      ],
+      "skill_match": null,
+      "passes": false,
+      "status": "open"
+    },
+    {
+      "id": "GH-4",
+      "type": "feat",
+      "priority": 5,
+      "title": "Photo timeline view of post-run photos",
+      "description": "Follow-up to GH-1. Adds a **photo timeline** so the user can see their post-run photos over time (the visual-progress half of the app), complementing the numeric dashboard (separate ticket).\n\n## Context\n- Single user, no auth.\n- Photos are already saved on disk by GH-1 (`instance/uploads/<uuid>_<name>`) and their path + run datetime are in the `runs` table.\n- Run datetime is the EXIF capture date (fallback upload time, flagged) \u2014 sort by that, not insertion order.",
+      "acceptance_criteria": [
+        "A `/timeline` page (linked from home/dashboard) shows each run's photo as a thumbnail in a date-ordered timeline, most recent first.",
+        "Each timeline item shows the run date and key stats (distance, pace) beneath/over the thumbnail.",
+        "Clicking a thumbnail opens the full-size photo.",
+        "Photos are served safely from the upload folder (no path traversal; only files referenced by a `runs` row).",
+        "Empty state (no photos yet) renders cleanly.",
+        "A test asserts `/timeline` returns 200 and references a known saved photo, using the existing SQLite test fixture.",
+        "`uv run pytest -q` is green."
+      ],
+      "skill_match": null,
+      "passes": false,
+      "status": "open"
+    },
+    {
+      "id": "GH-3",
+      "type": "feat",
+      "priority": 5,
+      "title": "Dashboard: list runs + distance bar chart + pace/duration trends",
+      "description": "Follow-up to GH-1. Adds the **dashboard** so logged runs are actually viewable and trends are visible. Builds on the existing Flask + SQLite app (`runs` table) and the home/upload/confirm/save flow.\n\n## Context\n- Single user, no auth (consistent with GH-1).\n- Trends only \u2014 **no goals / no \"missed days\"** (the user opted for trends over targets).\n- Data already captured per run (GH-1 `runs` table): distance, duration, pace, run_at (EXIF datetime), note, optional calories/incline, exif_date_missing.\n- Charting should stay lightweight (e.g. a small JS lib like Chart.js via CDN, or server-rendered SVG) \u2014 no heavy frontend build.",
+      "acceptance_criteria": [
+        "A `/dashboard` page (linked from the home page) lists all saved runs, most recent first, showing date, distance, duration, pace, and note.",
+        "A **bar chart of distance over time** (x = run date, y = distance), so progress is visible at a glance.",
+        "**Trend lines/series for pace and duration over time**, so the user can see how their runs have evolved.",
+        "Charts render from real `runs` rows (no hardcoded data) and handle the empty state (no runs yet) gracefully.",
+        "Runs flagged `exif_date_missing = 1` are still plotted (using the fallback datetime) but visually marked as estimated.",
+        "A test asserts `/dashboard` returns 200 and includes the chart container + a known run's values, using the existing SQLite test fixture.",
+        "`uv run pytest -q` is green."
+      ],
+      "skill_match": null,
+      "passes": false,
+      "status": "in_progress"
     }
   ]
 }
