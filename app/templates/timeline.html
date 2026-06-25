@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photo Timeline — Fitness Tracker</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: .25rem; }
+    nav { margin-bottom: 1.5rem; }
+    nav a { text-decoration: none; color: #0066cc; margin-right: 1rem; }
+    .empty { color: #888; margin-top: 2rem; }
+    .timeline { list-style: none; padding: 0; margin: 0; }
+    .timeline-item {
+      display: flex;
+      gap: 1.25rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #eee;
+      align-items: flex-start;
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-item a { flex-shrink: 0; display: block; }
+    .timeline-item img {
+      width: 120px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 4px;
+      display: block;
+    }
+    .run-meta { font-size: .9rem; }
+    .run-date { font-weight: 600; margin-bottom: .3rem; }
+    .run-stats { color: #555; }
+    .estimated { color: #888; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Photo Timeline</h1>
+  <nav>
+    <a href="/">&larr; Log a run</a>
+    <a href="/dashboard">Dashboard</a>
+  </nav>
+
+  {% if not runs %}
+  <p class="empty">No photos yet. <a href="/">Upload a photo</a> to log your first run.</p>
+  {% else %}
+  <ul class="timeline">
+    {% for run in runs %}
+    <li class="timeline-item{% if run.exif_date_missing %} estimated{% endif %}">
+      <a href="{{ url_for('runs.photo', filename=run.filename) }}">
+        <img src="{{ url_for('runs.photo', filename=run.filename) }}"
+             alt="Run photo {{ run.run_at or '' }}">
+      </a>
+      <div class="run-meta">
+        <div class="run-date">
+          {{ run.run_at or "Unknown date" }}
+          {% if run.exif_date_missing %}<span title="Date estimated — no EXIF data"> *</span>{% endif %}
+        </div>
+        <div class="run-stats">
+          Distance: {{ run.distance if run.distance is not none else "—" }}<br>
+          Pace: {{ run.pace if run.pace is not none else "—" }}
+        </div>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</body>
+</html>
