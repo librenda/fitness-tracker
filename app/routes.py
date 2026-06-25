@@ -54,6 +54,31 @@ def dashboard():
     return render_template("dashboard.html", runs=runs, chart_data=chart_data)
 
 
+@bp.route("/photos/<filename>")
+def photo(filename):
+    db = get_db()
+    rows = db.execute("SELECT photo_path FROM runs").fetchall()
+    allowed = {os.path.basename(r["photo_path"]) for r in rows}
+    if filename not in allowed:
+        abort(404)
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
+
+
+@bp.route("/timeline")
+def timeline():
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, photo_path, run_at, distance, pace, exif_date_missing"
+        " FROM runs ORDER BY run_at DESC"
+    ).fetchall()
+    runs = []
+    for r in rows:
+        run = dict(r)
+        run["filename"] = os.path.basename(r["photo_path"]) if r["photo_path"] else ""
+        runs.append(run)
+    return render_template("timeline.html", runs=runs)
+
+
 @bp.route("/upload", methods=["POST"])
 def upload():
     photo = request.files.get("photo")
