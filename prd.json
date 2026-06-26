@@ -37,8 +37,8 @@
         "`uv run pytest -q` is green."
       ],
       "skill_match": null,
-      "passes": false,
-      "status": "in_progress"
+      "passes": true,
+      "status": "done"
     },
     {
       "id": "GH-4",
