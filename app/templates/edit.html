@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit Run — Fitness Tracker</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+    nav { margin-bottom: 1rem; }
+    nav a { text-decoration: none; color: #0066cc; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    input[type="text"], input[type="number"], input[type="datetime-local"], textarea {
+      width: 100%; box-sizing: border-box; margin-top: .25rem; padding: .4rem; font-size: 1rem;
+    }
+    input[type="submit"] { margin-top: 1.5rem; padding: .5rem 1.5rem; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Edit Run</h1>
+  <nav><a href="/dashboard">&larr; Back to Dashboard</a></nav>
+
+  <form method="post">
+    <label for="run_at">Run date &amp; time</label>
+    <input type="datetime-local" id="run_at" name="run_at" value="{{ run.run_at or '' }}">
+
+    <label for="distance">Distance</label>
+    <input type="number" id="distance" name="distance" step="0.01"
+           value="{{ run.distance if run.distance is not none else '' }}">
+
+    <label for="duration">Duration (minutes)</label>
+    <input type="number" id="duration" name="duration" step="0.01"
+           value="{{ run.duration if run.duration is not none else '' }}">
+
+    <label for="pace">Pace (min/unit)</label>
+    <input type="number" id="pace" name="pace" step="0.01"
+           value="{{ run.pace if run.pace is not none else '' }}">
+
+    <label for="calories">Calories (optional)</label>
+    <input type="number" id="calories" name="calories" step="1"
+           value="{{ run.calories if run.calories is not none else '' }}">
+
+    <label for="incline">Incline % (optional)</label>
+    <input type="number" id="incline" name="incline" step="0.1"
+           value="{{ run.incline if run.incline is not none else '' }}">
+
+    <label for="note">How did the run feel?</label>
+    <textarea id="note" name="note" rows="3">{{ run.note or '' }}</textarea>
+
+    <br>
+    <input type="submit" value="Save Changes">
+  </form>
+</body>
+</html>
