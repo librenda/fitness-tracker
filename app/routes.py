@@ -5,10 +5,12 @@ from datetime import datetime
 
 from flask import (
     Blueprint,
+    abort,
     current_app,
     redirect,
     render_template,
     request,
+    send_from_directory,
     url_for,
 )
 from werkzeug.utils import secure_filename
@@ -50,6 +52,33 @@ def dashboard():
     })
 
     return render_template("dashboard.html", runs=runs, chart_data=chart_data)
+
+
+@bp.route("/timeline")
+def timeline():
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, photo_path, run_at, distance, pace, exif_date_missing"
+        " FROM runs ORDER BY run_at DESC"
+    ).fetchall()
+    runs = []
+    for r in rows:
+        d = dict(r)
+        d["photo_filename"] = os.path.basename(r["photo_path"])
+        runs.append(d)
+    return render_template("timeline.html", runs=runs)
+
+
+@bp.route("/photos/<filename>")
+def photo(filename):
+    db = get_db()
+    allowlist = {
+        os.path.basename(r["photo_path"])
+        for r in db.execute("SELECT photo_path FROM runs").fetchall()
+    }
+    if filename not in allowlist:
+        abort(404)
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], filename)
 
 
 @bp.route("/upload", methods=["POST"])

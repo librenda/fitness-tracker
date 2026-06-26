@@ -125,6 +125,63 @@ def test_dashboard_shows_run_and_chart(app, client):
     assert "morning run" in html
 
 
+def test_timeline_empty_state(client):
+    resp = client.get("/timeline")
+    assert resp.status_code == 200
+    html = resp.data.decode()
+    assert "No photos yet" in html
+
+
+def test_timeline_shows_run_and_photo(app, client):
+    with app.app_context():
+        upload_folder = app.config["UPLOAD_FOLDER"]
+        fname = "test_run_photo.jpg"
+        fpath = os.path.join(upload_folder, fname)
+        with open(fpath, "wb") as f:
+            f.write(_TINY_JPEG)
+        from app.db import get_db
+        db = get_db()
+        db.execute(
+            """INSERT INTO runs
+               (photo_path, distance, duration, pace, run_at, note,
+                calories, incline, exif_date_missing)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (fpath, 7.2, 40.0, 5.5, "2026-06-22T09:00", None, 350, 0.0, 0),
+        )
+        db.commit()
+
+    resp = client.get("/timeline")
+    assert resp.status_code == 200
+    html = resp.data.decode()
+    assert fname in html
+    assert "7.2" in html
+
+
+def test_photo_serving_guarded(app, client):
+    with app.app_context():
+        upload_folder = app.config["UPLOAD_FOLDER"]
+        fname = "guard_test.jpg"
+        fpath = os.path.join(upload_folder, fname)
+        with open(fpath, "wb") as f:
+            f.write(_TINY_JPEG)
+        from app.db import get_db
+        db = get_db()
+        db.execute(
+            """INSERT INTO runs
+               (photo_path, distance, duration, pace, run_at, note,
+                calories, incline, exif_date_missing)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (fpath, 5.0, 30.0, 6.0, "2026-06-23T07:00", None, 300, 0.0, 0),
+        )
+        db.commit()
+
+    resp_ok = client.get(f"/photos/{fname}")
+    assert resp_ok.status_code == 200
+
+    resp_bad = client.get("/photos/not_in_db.jpg")
+    assert resp_bad.status_code == 404
+
+
 def test_save_inserts_row(app, client, monkeypatch, tmp_path):
     import app.routes as routes_module
 
