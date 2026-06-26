@@ -221,3 +221,68 @@ def test_save_inserts_row(app, client, monkeypatch, tmp_path):
     assert row["note"] == "felt good"
     # Photo file still on disk
     assert os.path.exists(photo_path)
+
+
+def _insert_run(app, photo_path):
+    with app.app_context():
+        db = get_db()
+        db.execute(
+            """INSERT INTO runs
+               (photo_path, distance, duration, pace, run_at, note,
+                calories, incline, exif_date_missing)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (photo_path, 5.0, 30.0, 6.0, "2026-06-21T08:00", "original note", 300, 1.0, 0),
+        )
+        db.commit()
+        return db.execute("SELECT id FROM runs WHERE photo_path = ?", (photo_path,)).fetchone()["id"]
+
+
+def test_edit_run_updates_row(app, client):
+    run_id = _insert_run(app, "/fake/edit_test.jpg")
+
+    resp = client.post(
+        f"/runs/{run_id}/edit",
+        data={
+            "distance": "10.0",
+            "duration": "60.0",
+            "pace": "6.0",
+            "run_at": "2026-06-22T09:00",
+            "note": "updated note",
+            "calories": "500",
+            "incline": "2.0",
+        },
+    )
+    assert resp.status_code in (302, 200)
+
+    with app.app_context():
+        row = get_db().execute("SELECT * FROM runs WHERE id = ?", (run_id,)).fetchone()
+    assert row["distance"] == 10.0
+    assert row["duration"] == 60.0
+    assert row["note"] == "updated note"
+    assert row["calories"] == 500
+
+
+def test_delete_run_removes_row_and_file(app, client):
+    upload_folder = app.config["UPLOAD_FOLDER"]
+    fname = "delete_test.jpg"
+    fpath = os.path.join(upload_folder, fname)
+    with open(fpath, "wb") as f:
+        f.write(_TINY_JPEG)
+
+    run_id = _insert_run(app, fpath)
+
+    resp = client.post(f"/runs/{run_id}/delete")
+    assert resp.status_code in (302, 200)
+
+    with app.app_context():
+        row = get_db().execute("SELECT * FROM runs WHERE id = ?", (run_id,)).fetchone()
+    assert row is None
+    assert not os.path.exists(fpath)
+
+
+def test_edit_delete_nonexistent_run_returns_404(app, client):
+    resp_edit = client.get("/runs/99999/edit")
+    assert resp_edit.status_code == 404
+
+    resp_delete = client.post("/runs/99999/delete")
+    assert resp_delete.status_code == 404
