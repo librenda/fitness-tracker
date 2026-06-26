@@ -139,6 +139,57 @@ def save():
     return redirect(url_for("runs.index"))
 
 
+@bp.route("/runs/<int:run_id>/edit", methods=["GET", "POST"])
+def edit_run(run_id):
+    db = get_db()
+    run = db.execute("SELECT * FROM runs WHERE id = ?", (run_id,)).fetchone()
+    if run is None:
+        abort(404)
+
+    if request.method == "POST":
+        db.execute(
+            """UPDATE runs SET
+               distance = ?, duration = ?, pace = ?,
+               run_at = ?, note = ?, calories = ?, incline = ?
+               WHERE id = ?""",
+            (
+                _float_or_none(request.form.get("distance")),
+                _float_or_none(request.form.get("duration")),
+                _float_or_none(request.form.get("pace")),
+                request.form.get("run_at"),
+                request.form.get("note") or None,
+                _int_or_none(request.form.get("calories")),
+                _float_or_none(request.form.get("incline")),
+                run_id,
+            ),
+        )
+        db.commit()
+        return redirect(url_for("runs.dashboard"))
+
+    return render_template("edit.html", run=dict(run))
+
+
+@bp.route("/runs/<int:run_id>/delete", methods=["POST"])
+def delete_run(run_id):
+    db = get_db()
+    run = db.execute("SELECT * FROM runs WHERE id = ?", (run_id,)).fetchone()
+    if run is None:
+        abort(404)
+
+    photo_path = run["photo_path"]
+    upload_folder = current_app.config["UPLOAD_FOLDER"]
+
+    db.execute("DELETE FROM runs WHERE id = ?", (run_id,))
+    db.commit()
+
+    real_upload = os.path.realpath(upload_folder)
+    real_photo = os.path.realpath(photo_path)
+    if real_photo.startswith(real_upload + os.sep) and os.path.isfile(real_photo):
+        os.remove(real_photo)
+
+    return redirect(url_for("runs.dashboard"))
+
+
 def _float_or_none(val):
     try:
         return float(val) if val else None
