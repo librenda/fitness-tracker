@@ -93,6 +93,38 @@ def test_upload_mocked_vision(client, monkeypatch):
     assert "photo_path" in html  # hidden field present
 
 
+def test_dashboard_empty_state(client):
+    resp = client.get("/dashboard")
+    assert resp.status_code == 200
+    html = resp.data.decode()
+    assert "Dashboard" in html
+    assert "No runs saved yet" in html
+
+
+def test_dashboard_shows_run_and_chart(app, client):
+    with app.app_context():
+        from app.db import get_db
+        db = get_db()
+        db.execute(
+            """INSERT INTO runs
+               (photo_path, distance, duration, pace, run_at, note,
+                calories, incline, exif_date_missing)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            ("/fake/path.jpg", 8.5, 45.0, 5.3, "2026-06-21T08:30", "morning run",
+             400, 0.5, 0),
+        )
+        db.commit()
+
+    resp = client.get("/dashboard")
+    assert resp.status_code == 200
+    html = resp.data.decode()
+    assert "distanceChart" in html
+    assert "paceChart" in html
+    assert "durationChart" in html
+    assert "8.5" in html
+    assert "morning run" in html
+
+
 def test_save_inserts_row(app, client, monkeypatch, tmp_path):
     import app.routes as routes_module
 

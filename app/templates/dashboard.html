@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — Fitness Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: .25rem; }
+    nav { margin-bottom: 1.5rem; }
+    nav a { text-decoration: none; color: #0066cc; }
+    .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .chart-box { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; }
+    .chart-box h2 { margin: 0 0 .75rem; font-size: 1rem; }
+    .chart-full { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 2rem; }
+    .chart-full h2 { margin: 0 0 .75rem; font-size: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { text-align: left; padding: .5rem .75rem; border-bottom: 1px solid #eee; }
+    th { background: #f5f5f5; font-weight: 600; }
+    .estimated { color: #888; font-style: italic; }
+    .empty { color: #888; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <h1>Dashboard</h1>
+  <nav><a href="/">&larr; Log a run</a></nav>
+
+  {% if not runs %}
+  <p class="empty">No runs saved yet. <a href="/">Upload a photo</a> to log your first run.</p>
+  {% else %}
+
+  <div class="chart-full">
+    <h2>Distance over time</h2>
+    <canvas id="distanceChart" height="120"></canvas>
+  </div>
+
+  <div class="charts">
+    <div class="chart-box">
+      <h2>Pace over time</h2>
+      <canvas id="paceChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h2>Duration over time</h2>
+      <canvas id="durationChart"></canvas>
+    </div>
+  </div>
+
+  <h2>All Runs</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Distance</th>
+        <th>Duration (min)</th>
+        <th>Pace (min/unit)</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+      <tr{% if run.exif_date_missing %} class="estimated"{% endif %}>
+        <td>
+          {{ run.run_at or "—" }}
+          {% if run.exif_date_missing %}<span title="Date estimated — no EXIF data"> *</span>{% endif %}
+        </td>
+        <td>{{ run.distance if run.distance is not none else "—" }}</td>
+        <td>{{ run.duration if run.duration is not none else "—" }}</td>
+        <td>{{ run.pace if run.pace is not none else "—" }}</td>
+        <td>{{ run.note or "" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p style="font-size:.8rem;color:#888;margin-top:.5rem;">* date estimated (no EXIF)</p>
+
+  <script>
+    const data = {{ chart_data | safe }};
+
+    const pointStyles = data.estimated.map(e => e ? "triangle" : "circle");
+    const pointColors = data.estimated.map(e => e ? "orange" : "steelblue");
+
+    new Chart(document.getElementById("distanceChart"), {
+      type: "bar",
+      data: {
+        labels: data.labels,
+        datasets: [{
+          label: "Distance",
+          data: data.distances,
+          backgroundColor: data.estimated.map(e => e ? "rgba(255,165,0,0.6)" : "rgba(70,130,180,0.7)"),
+          borderColor: data.estimated.map(e => e ? "orange" : "steelblue"),
+          borderWidth: 1,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    new Chart(document.getElementById("paceChart"), {
+      type: "line",
+      data: {
+        labels: data.labels,
+        datasets: [{
+          label: "Pace",
+          data: data.paces,
+          borderColor: "steelblue",
+          backgroundColor: "rgba(70,130,180,0.1)",
+          pointStyle: pointStyles,
+          pointBackgroundColor: pointColors,
+          tension: 0.3,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: false } }
+      }
+    });
+
+    new Chart(document.getElementById("durationChart"), {
+      type: "line",
+      data: {
+        labels: data.labels,
+        datasets: [{
+          label: "Duration",
+          data: data.durations,
+          borderColor: "seagreen",
+          backgroundColor: "rgba(46,139,87,0.1)",
+          pointStyle: pointStyles,
+          pointBackgroundColor: pointColors,
+          tension: 0.3,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: false } }
+      }
+    });
+  </script>
+  {% endif %}
+</body>
+</html>
