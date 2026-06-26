@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photo Timeline — Fitness Tracker</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { margin-bottom: .25rem; }
+    nav { margin-bottom: 1.5rem; }
+    nav a { text-decoration: none; color: #0066cc; margin-right: 1rem; }
+    .empty { color: #888; margin-top: 2rem; }
+    .timeline { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+    .timeline-item { border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
+    .timeline-item a { display: block; }
+    .timeline-item img { width: 100%; height: 160px; object-fit: cover; display: block; }
+    .timeline-caption { padding: .6rem .75rem; font-size: .85rem; }
+    .timeline-caption .date { font-weight: 600; margin-bottom: .2rem; }
+    .timeline-caption .stats { color: #555; }
+    .estimated { color: #888; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Photo Timeline</h1>
+  <nav>
+    <a href="/">&larr; Log a run</a>
+    <a href="/dashboard">Dashboard</a>
+  </nav>
+
+  {% if not runs %}
+  <p class="empty">No photos yet. <a href="/">Upload a photo</a> to log your first run.</p>
+  {% else %}
+  <div class="timeline">
+    {% for run in runs %}
+    <div class="timeline-item">
+      <a href="{{ url_for('runs.photo', filename=run.photo_filename) }}">
+        <img src="{{ url_for('runs.photo', filename=run.photo_filename) }}"
+             alt="Run photo {{ run.run_at or '' }}">
+      </a>
+      <div class="timeline-caption{% if run.exif_date_missing %} estimated{% endif %}">
+        <div class="date">
+          {{ run.run_at or "—" }}{% if run.exif_date_missing %} <span title="Date estimated — no EXIF data">*</span>{% endif %}
+        </div>
+        <div class="stats">
+          {% if run.distance is not none %}{{ run.distance }} km{% else %}—{% endif %}
+          &nbsp;·&nbsp;
+          {% if run.pace is not none %}{{ run.pace }} min/km{% else %}—{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <p style="font-size:.8rem;color:#888;margin-top:.5rem;">* date estimated (no EXIF)</p>
+  {% endif %}
+</body>
+</html>
